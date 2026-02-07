@@ -6,13 +6,20 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Entity.class)
-public class EntityInterpolateMoveMixin {
+public abstract class EntityInterpolateMoveMixin {
+
+    @Shadow
+    public abstract float getXRot();
+
+    @Shadow
+    public abstract float getYRot();
 
     @ModifyArg(
             method = "move",
@@ -40,6 +47,6 @@ public class EntityInterpolateMoveMixin {
         if (!((Entity)(Object)this instanceof ClientEntity)) {
             return;
         }
-        ((ClientEntity)(Object)this).moveOrInterpolateTo(vec35);
+        ((ClientEntity)(Object)this).moveOrInterpolateTo(vec35, getXRot(), getYRot());
     }
 }

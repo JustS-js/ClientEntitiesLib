@@ -54,6 +54,11 @@ public class ClientFollowTargetSink extends ClientBehavior<ClientEntity> {
 
     private void followTarget(ClientEntity livingEntity) {
         Brain<?> brain = livingEntity.getBrain();
+        if (livingEntity.getFollowTargetEntity() == null) {
+            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+            brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
+            return;
+        }
         brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(livingEntity.getFollowTargetEntity(), false), this.speedModifier, 2));
         brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(livingEntity.getFollowTargetEntity(), true));
     }

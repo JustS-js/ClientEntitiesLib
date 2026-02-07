@@ -6,3 +6,4 @@ accessible field net/minecraft/world/entity/ai/Brain availableBehaviorsByPriorit
 accessible field net/minecraft/world/entity/ai/Brain LOGGER Lorg/slf4j/Logger;
 accessible field net/minecraft/world/entity/ai/Brain codec Ljava/util/function/Supplier;
 accessible method net/minecraft/world/entity/ai/Brain$MemoryValue setMemoryInternal (Lnet/minecraft/world/entity/ai/Brain;)V
+accessible method net/minecraft/client/renderer/entity/EntityRenderers register (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/client/renderer/entity/EntityRendererProvider;)V

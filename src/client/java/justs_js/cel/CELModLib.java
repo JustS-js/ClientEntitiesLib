@@ -26,7 +26,7 @@ public class CELModLib implements ClientModInitializer {
 		ClientTickEvents.START_WORLD_TICK.register(controller::tick);
 		LOGGER.info("Client Entities Lib loaded.");
 
-		//testImpl(); // todo: remove
+//		testImpl(); // todo: remove
 	}
 
 	private void testImpl() {

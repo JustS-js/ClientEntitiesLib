@@ -23,6 +23,7 @@ import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -49,6 +50,7 @@ public abstract class ClientEntity extends PathfinderMob {
                     ClientSensorType.NEAREST_LIVING_ENTITIES
             );
 
+    @Nullable
     private Entity followTargetEntity;
     private ClientBrain<? extends ClientEntity> brain;
 
@@ -196,11 +198,11 @@ public abstract class ClientEntity extends PathfinderMob {
         brain.setActiveActivityIfPossible(Activity.IDLE);
     }
 
-    public void setFollowTargetEntity(Entity followTargetEntity) {
+    public void setFollowTargetEntity(@Nullable Entity followTargetEntity) {
         this.followTargetEntity = followTargetEntity;
     }
 
-    public Entity getFollowTargetEntity() {
+    public @Nullable Entity getFollowTargetEntity() {
         return followTargetEntity;
     }
 
