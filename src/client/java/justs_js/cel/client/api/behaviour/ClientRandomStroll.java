@@ -13,6 +13,7 @@ import net.minecraft.world.entity.ai.behavior.RandomStroll;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.behavior.declarative.Trigger;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -20,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -67,6 +69,11 @@ public class ClientRandomStroll {
 
     private static ClientOneShot<PathfinderMob> strollFlyOrSwim(float f, Function<PathfinderMob, Vec3> function, Predicate<PathfinderMob> predicate) {
         return new ClientOneShot<>() {
+            @Override
+            public Set<MemoryModuleType<?>> getRequiredMemories() {
+                return Set.of(MemoryModuleType.LOOK_TARGET);
+            }
+
             @Override
             public boolean trigger(ClientLevel serverLevel, PathfinderMob livingEntity, long l) {
                 if (!predicate.test(livingEntity)) {

@@ -2,7 +2,7 @@ package justs_js.cel.client.api.sensor;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.sensing.*;
 
@@ -17,6 +17,6 @@ public class ClientSensorType<U extends ClientSensor<?>> extends SensorType<U> {
     }
 
     private static <U extends ClientSensor<?>> ClientSensorType<U> register(String string, Supplier<U> supplier) {
-        return Registry.register(BuiltInRegistries.SENSOR_TYPE, ResourceLocation.withDefaultNamespace(string), new ClientSensorType(supplier));
+        return Registry.register(BuiltInRegistries.SENSOR_TYPE, Identifier.withDefaultNamespace(string), new ClientSensorType(supplier));
     }
 }

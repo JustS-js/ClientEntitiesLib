@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JavaOps;
 import justs_js.cel.client.api.behaviour.*;
 import justs_js.cel.client.api.sensor.ClientSensor;
 import justs_js.cel.client.api.sensor.ClientSensorType;
@@ -15,19 +13,22 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.valueproviders.BiasedToBottomInt;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.ActivityData;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.List;
 
 public abstract class ClientEntity extends PathfinderMob {
+    protected static ClientBrain.Provider BRAIN_PROVIDER;
+
     private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES =
             ImmutableList.of(
                     MemoryModuleType.NEAREST_LIVING_ENTITIES,
@@ -52,11 +53,11 @@ public abstract class ClientEntity extends PathfinderMob {
 
     @Nullable
     private Entity followTargetEntity;
-    private ClientBrain<? extends ClientEntity> brain;
+    private ClientBrain brain;
 
     public ClientEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
-        this.brain = this.makeBrain(new Dynamic<>(JavaOps.INSTANCE, Map.of("memories", Map.of())));
+        this.brain = this.makeBrain(Brain.Packed.EMPTY);
     }
 
     @Override
@@ -134,68 +135,81 @@ public abstract class ClientEntity extends PathfinderMob {
     protected void customClientAiStep(ClientLevel clientLevel) {
         ProfilerFiller profilerFiller = Profiler.get();
         profilerFiller.push("clientEntityBrain");
-        ClientBrain<ClientEntity> brain = (ClientBrain<ClientEntity>)this.getBrain();
+        ClientBrain brain = this.getBrain();
         brain.tick(clientLevel, this);
         profilerFiller.pop();
     }
 
-    protected ClientBrain.@NotNull Provider<ClientEntity> clientBrainProvider() {
-        return ClientBrain.clientProvider(MEMORY_TYPES, SENSOR_TYPES);
+    protected ClientBrain.@NotNull Provider clientBrainProvider() {
+        if (BRAIN_PROVIDER == null) {
+            BRAIN_PROVIDER = ClientBrain.clientProvider(
+                    this.getSensors(),
+                    this::getActivities
+            );
+        }
+        return BRAIN_PROVIDER;
     }
 
+
     @Override
-    public @NotNull ClientBrain<? extends ClientEntity> getBrain() {
+    public @NotNull ClientBrain getBrain() {
         return this.brain;
     }
 
     @Override
-    protected @NotNull ClientBrain<? extends ClientEntity> makeBrain(Dynamic<?> dynamic) {
-        ClientBrain<? extends ClientEntity> brain = this.clientBrainProvider().makeBrain(dynamic);
-        this.registerBrainGoals(brain);
-        return brain;
+    protected @NotNull ClientBrain makeBrain(final ClientBrain.Packed packedBrain) {
+        return this.clientBrainProvider().makeBrain(this, packedBrain);
     }
 
-    protected void registerBrainGoals(ClientBrain<? extends ClientEntity> brain) {
-        brain.setSchedule(Schedule.EMPTY);
+    /**
+     * Override this to create your own sensors
+     * */
+    protected List<ClientSensorType<? extends ClientSensor<? super ClientEntity>>> getSensors() {
+        return SENSOR_TYPES;
+    }
 
-        brain.addActivity(
-                Activity.IDLE,
-                ImmutableList.of(
-                        Pair.of(0, new ClientRunOne<>(
-                                ImmutableMap.of(
-                                        MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
-                                        MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.REGISTERED,
-                                        MemoryModuleType.GAZE_COOLDOWN_TICKS, MemoryStatus.REGISTERED
+    /**
+     * Override this to create your own behaviors
+     * */
+    protected List<ActivityData<ClientEntity>> getActivities(ClientEntity entity) {
+        return List.of(
+                ActivityData.create(
+                        Activity.CORE,
+                        0,
+                        ImmutableList.of(
+                                new ClientSwim<>(0.8F)
+                        )
+                ),
+                ActivityData.create(
+                        Activity.IDLE,
+                        0,
+                        ImmutableList.of(
+                                new ClientRunOne<>(
+                                        ImmutableMap.of(
+                                                MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
+                                                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.REGISTERED,
+                                                MemoryModuleType.GAZE_COOLDOWN_TICKS, MemoryStatus.REGISTERED
+                                        ),
+                                        ImmutableList.of(
+                                                Pair.of(new ClientDoNothing(30, 60), 1),
+                                                Pair.of(ClientSetEntityLookTarget.create(4.0F), 1),
+                                                Pair.of(new ClientRandomLookAround(BiasedToBottomInt.of(100, 200), 60, 30, 90), 1),
+                                                Pair.of(new ClientLookAtTargetSink(30, 60), 1)
+                                        )
                                 ),
-                                ImmutableList.of(
-                                        Pair.of(new ClientDoNothing(30, 60), 1),
-                                        Pair.of(ClientSetEntityLookTarget.create(4.0F), 1),
-                                        Pair.of(new ClientRandomLookAround(BiasedToBottomInt.of(100, 200), 60, 30, 90), 1),
-                                        Pair.of(new ClientLookAtTargetSink(30, 60), 1)
-                                )
-                        )),
-                        Pair.of(2, new ClientRunOne<>(
-                                ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED),
-                                ImmutableList.of(
-                                        Pair.of(new ClientDoNothing(60, 120), 1),
-                                        Pair.of(ClientRandomStroll.stroll(0.75f), 1),
-                                        Pair.of(new ClientJumpOnSpot(), 1),
-                                        Pair.of(new ClientMoveToTargetSink(), 1)
-                                )
-                        )),
-                        Pair.of(1, new ClientFollowTargetSink(0.9F))
+                                new ClientRunOne<>(
+                                        ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED),
+                                        ImmutableList.of(
+                                                Pair.of(new ClientDoNothing(60, 120), 1),
+                                                Pair.of(ClientRandomStroll.stroll(0.75f), 1),
+                                                Pair.of(new ClientJumpOnSpot(), 1),
+                                                Pair.of(new ClientMoveToTargetSink(), 1)
+                                        )
+                                ),
+                                new ClientFollowTargetSink(0.9F)
+                        )
                 )
         );
-
-        brain.addActivity(
-                Activity.CORE,
-                ImmutableList.of(
-                        Pair.of(0, new ClientSwim<>(0.8F))
-                )
-        );
-        brain.setCoreActivities(ImmutableSet.of(Activity.CORE));
-        brain.setDefaultActivity(Activity.IDLE);
-        brain.setActiveActivityIfPossible(Activity.IDLE);
     }
 
     public void setFollowTargetEntity(@Nullable Entity followTargetEntity) {

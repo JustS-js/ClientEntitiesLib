@@ -25,7 +25,7 @@ public class ClientJumpOnSpot extends ClientBehavior<Mob> {
     @Override
     protected void start(ClientLevel clientLevel, Mob livingEntity, long l) {
         super.start(clientLevel, livingEntity, l);
-        this.remainingJumps = MIN_JUMPS + clientLevel.random.nextInt(MAX_JUMPS - MIN_JUMPS + 1);
+        this.remainingJumps = MIN_JUMPS + clientLevel.getRandom().nextInt(MAX_JUMPS - MIN_JUMPS + 1);
         this.remainingCooldownUntilNextJump = 0;
     }
 

@@ -8,9 +8,11 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class ClientBehavior<E extends LivingEntity> implements ClientBehaviorControl<E> {
     public static final int DEFAULT_DURATION = 60;
@@ -37,6 +39,10 @@ public abstract class ClientBehavior<E extends LivingEntity> implements ClientBe
 
     public Behavior.@NotNull Status getStatus() {
         return this.status;
+    }
+
+    public @NonNull Set<MemoryModuleType<?>> getRequiredMemories() {
+        return this.entryCondition.keySet();
     }
 
     public final boolean tryStart(ClientLevel clientLevel, E livingEntity, long l) {

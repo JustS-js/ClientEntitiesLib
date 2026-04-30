@@ -40,6 +40,17 @@ public class ClientGateBehavior<E extends LivingEntity> implements ClientBehavio
     }
 
     @Override
+    public Set<MemoryModuleType<?>> getRequiredMemories() {
+        Set<MemoryModuleType<?>> memories = new HashSet(this.entryCondition.keySet());
+
+        for(BehaviorControl<? super E> behavior : this.behaviors) {
+            memories.addAll(behavior.getRequiredMemories());
+        }
+
+        return memories;
+    }
+
+    @Override
     public boolean tryStart(ServerLevel serverLevel, E livingEntity, long l) {return false;}
 
     @Override
@@ -49,21 +60,15 @@ public class ClientGateBehavior<E extends LivingEntity> implements ClientBehavio
     public void doStop(ServerLevel serverLevel, E livingEntity, long l) {}
 
     private boolean hasRequiredMemories(E livingEntity) {
-        Iterator var2 = this.entryCondition.entrySet().iterator();
-
-        MemoryModuleType memoryModuleType;
-        MemoryStatus memoryStatus;
-        do {
-            if (!var2.hasNext()) {
-                return true;
+        for(Map.Entry<MemoryModuleType<?>, MemoryStatus> entry : this.entryCondition.entrySet()) {
+            MemoryModuleType<?> memoryType = entry.getKey();
+            MemoryStatus requiredStatus = entry.getValue();
+            if (!livingEntity.getBrain().checkMemory(memoryType, requiredStatus)) {
+                return false;
             }
+        }
 
-            Map.Entry<MemoryModuleType<?>, MemoryStatus> entry = (Map.Entry)var2.next();
-            memoryModuleType = entry.getKey();
-            memoryStatus = entry.getValue();
-        } while(livingEntity.getBrain().checkMemory(memoryModuleType, memoryStatus));
-
-        return false;
+        return true;
     }
 
     public final boolean tryStart(ClientLevel serverLevel, E livingEntity, long l) {

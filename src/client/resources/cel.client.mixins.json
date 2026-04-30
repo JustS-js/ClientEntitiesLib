@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "justs_js.cel.client.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "client": [
     "EntityInterpolateMoveMixin",
     "NearestVisibleLivingEntitiesAccessor"

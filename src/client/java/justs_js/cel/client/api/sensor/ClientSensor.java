@@ -11,7 +11,6 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class ClientSensor<E extends LivingEntity> extends Sensor<E> {
-    private static final RandomSource RANDOM = RandomSource.createThreadSafe();
     private final int scanRate;
     private long timeToTick;
 
@@ -20,7 +19,10 @@ public abstract class ClientSensor<E extends LivingEntity> extends Sensor<E> {
 
     public ClientSensor(int i) {
         this.scanRate = i;
-        this.timeToTick = (long)RANDOM.nextInt(i);
+    }
+
+    public void randomlyDelayStart(final RandomSource randomSource) {
+        this.timeToTick = (long)randomSource.nextInt(this.scanRate);
     }
 
     public ClientSensor() {
@@ -58,7 +60,7 @@ public abstract class ClientSensor<E extends LivingEntity> extends Sensor<E> {
             if (livingEntity == null) {
                 return !isCombat || (livingEntity2.canBeSeenAsEnemy() && clientLevel.getDifficulty() != Difficulty.PEACEFUL);
             } else {
-                if (isCombat && (!livingEntity.canAttack(livingEntity2) || !livingEntity.canAttackType(livingEntity2.getType()) || livingEntity.isAlliedTo(livingEntity2))) {
+                if (isCombat && (!livingEntity.canAttack(livingEntity2) || !livingEntity.canAttack(livingEntity2) || livingEntity.isAlliedTo(livingEntity2))) {
                     return false;
                 }
 

@@ -14,7 +14,7 @@ import net.minecraft.world.entity.MobCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public class CELModLib implements ClientModInitializer {
 	public static final String MOD_ID = "cel";
@@ -23,10 +23,10 @@ public class CELModLib implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ClientTickEvents.START_WORLD_TICK.register(controller::tick);
+		ClientTickEvents.START_LEVEL_TICK.register(controller::tick);
 		LOGGER.info("Client Entities Lib loaded.");
 
-//		testImpl(); // todo: remove
+		testImpl(); // todo: remove
 	}
 
 	private void testImpl() {
@@ -46,7 +46,7 @@ public class CELModLib implements ClientModInitializer {
 											commandContext -> {
 												ClientEntityImpl entity = new ClientEntityImpl(
 														CLIENT_ENTITY_IMPL,
-														commandContext.getSource().getWorld()
+														commandContext.getSource().getLevel()
 												);
 												entity.snapTo(commandContext.getSource().getPosition());
 												controller.addEntity(entity);

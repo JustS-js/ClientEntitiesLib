@@ -4,7 +4,10 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 public class ClientDoNothing implements ClientBehaviorControl<LivingEntity> {
     private final int minDuration;
@@ -16,6 +19,10 @@ public class ClientDoNothing implements ClientBehaviorControl<LivingEntity> {
         this.status = Behavior.Status.STOPPED;
         this.minDuration = i;
         this.maxDuration = j;
+    }
+
+    public Set<MemoryModuleType<?>> getRequiredMemories() {
+        return Set.of();
     }
 
     @Override

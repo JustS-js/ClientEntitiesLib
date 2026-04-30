@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class ClientSetEntityLookTarget {
@@ -40,6 +41,11 @@ public class ClientSetEntityLookTarget {
     public static ClientOneShot<LivingEntity> create(Predicate<LivingEntity> predicate, float f) {
         float g = f * f;
         return new ClientOneShot<>() {
+            @Override
+            public Set<MemoryModuleType<?>> getRequiredMemories() {
+                return Set.of(MemoryModuleType.LOOK_TARGET);
+            }
+
             @Override
             public boolean trigger(ClientLevel clientLevel, LivingEntity livingEntity, long l) {
                 Brain<?> brain = livingEntity.getBrain();
