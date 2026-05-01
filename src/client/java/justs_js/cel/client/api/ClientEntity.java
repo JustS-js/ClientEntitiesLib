@@ -28,23 +28,6 @@ import java.util.List;
 
 public abstract class ClientEntity extends PathfinderMob {
     protected static ClientBrain.Provider BRAIN_PROVIDER;
-
-    private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES =
-            ImmutableList.of(
-                    MemoryModuleType.NEAREST_LIVING_ENTITIES,
-                    MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-                    MemoryModuleType.NEAREST_PLAYERS,
-                    MemoryModuleType.NEAREST_VISIBLE_PLAYER,
-                    MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER,
-                    MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYERS,
-                    MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
-                    MemoryModuleType.LOOK_TARGET,
-                    MemoryModuleType.GAZE_COOLDOWN_TICKS,
-                    MemoryModuleType.WALK_TARGET,
-                    MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
-                    MemoryModuleType.PATH
-
-            );
     private static final ImmutableList<ClientSensorType<? extends ClientSensor<? super ClientEntity>>> SENSOR_TYPES =
             ImmutableList.of(
                     ClientSensorType.NEAREST_PLAYERS,
@@ -53,7 +36,7 @@ public abstract class ClientEntity extends PathfinderMob {
 
     @Nullable
     private Entity followTargetEntity;
-    private ClientBrain brain;
+    protected ClientBrain brain;
 
     public ClientEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
