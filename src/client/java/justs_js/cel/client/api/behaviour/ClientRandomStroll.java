@@ -1,22 +1,16 @@
 package justs_js.cel.client.api.behaviour;
 
+import justs_js.cel.CELModLib;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
-import net.minecraft.world.entity.ai.behavior.OneShot;
-import net.minecraft.world.entity.ai.behavior.RandomStroll;
-import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.Trigger;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,8 +111,8 @@ public class ClientRandomStroll {
     }
 
     @Nullable
-    private static Vec3 getTargetFlyPos(PathfinderMob pathfinderMob, int i, int j) {
-        Vec3 vec3 = pathfinderMob.getViewVector(0.0F);
-        return AirAndWaterRandomPos.getPos(pathfinderMob, i, j, -2, vec3.x, vec3.z, 1.5707963705062866);
+    private static Vec3 getTargetFlyPos(PathfinderMob pathfinderMob, int maxHorizontalDistance, int maxVerticalDistance) {
+        Vec3 wanderDirection = pathfinderMob.getViewVector(0.0F);
+        return AirAndWaterRandomPos.getPos(pathfinderMob, maxHorizontalDistance, maxVerticalDistance, -2, wanderDirection.x, wanderDirection.z, ((float)Math.PI / 2F));
     }
 }

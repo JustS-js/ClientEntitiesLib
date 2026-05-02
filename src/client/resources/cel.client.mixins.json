@@ -3,6 +3,7 @@
   "package": "justs_js.cel.client.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "BrainSensorAccessor",
     "EntityInterpolateMoveMixin",
     "NearestVisibleLivingEntitiesAccessor"
   ],

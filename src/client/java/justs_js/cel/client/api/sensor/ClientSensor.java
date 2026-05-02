@@ -1,5 +1,6 @@
 package justs_js.cel.client.api.sensor;
 
+import justs_js.cel.CELModLib;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;

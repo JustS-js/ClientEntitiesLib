@@ -2,9 +2,11 @@ package justs_js.cel.client.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import justs_js.cel.CELModLib;
 import justs_js.cel.client.api.behaviour.ClientBehaviorControl;
 import justs_js.cel.client.api.sensor.ClientSensor;
 import justs_js.cel.client.api.sensor.ClientSensorType;
+import justs_js.cel.client.mixin.BrainSensorAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.ActivityData;
@@ -39,8 +41,6 @@ public class ClientBrain extends Brain<ClientEntity> {
         return new ClientBrain.Provider(ImmutableList.of(), sensorTypes, activities);
     }
 
-    private final Map<ClientSensorType<? extends ClientSensor<? super ClientEntity>>, ClientSensor<? super ClientEntity>> sensors = Maps.newLinkedHashMap();
-
     public void tick(ClientLevel clientLevel, ClientEntity livingEntity) {
         this.forgetOutdatedMemories();
         this.tickSensors(clientLevel, livingEntity);
@@ -48,55 +48,36 @@ public class ClientBrain extends Brain<ClientEntity> {
         this.tickEachRunningBehavior(clientLevel, livingEntity);
     }
 
-    private void tickEachRunningBehavior(ClientLevel clientLevel, ClientEntity livingEntity) {
-        long l = clientLevel.getGameTime();
-        Iterator var5 = this.getRunningBehaviors().iterator();
-
-        while(var5.hasNext()) {
-            BehaviorControl<? super ClientEntity> behaviorControl = (BehaviorControl)var5.next();
-            ((ClientBehaviorControl<? super ClientEntity>)behaviorControl).tickOrStop(clientLevel, livingEntity, l);
-        }
-    }
-
     private void tickSensors(ClientLevel clientLevel, ClientEntity livingEntity) {
-        for (ClientSensor<? super ClientEntity> sensor : this.sensors.values()) {
+        Map<SensorType<? extends ClientSensor<? super ClientEntity>>, ClientSensor<? super ClientEntity>> sensors = ((BrainSensorAccessor)this).cel$getSensors();
+        for (ClientSensor<? super ClientEntity> sensor : sensors.values()) {
             sensor.tick(clientLevel, livingEntity);
         }
     }
 
     private void startEachNonRunningBehavior(ClientLevel clientLevel, ClientEntity livingEntity) {
-        long l = clientLevel.getGameTime();
-        Iterator var5 = this.availableBehaviorsByPriority.values().iterator();
+        long time = clientLevel.getGameTime();
 
-        label34:
-        while(var5.hasNext()) {
-            Map<Activity, Set<BehaviorControl<? super ClientEntity>>> map = (Map)var5.next();
-            Iterator var7 = map.entrySet().iterator();
-
-            while(true) {
-                Map.Entry entry;
-                Activity activity;
-                do {
-                    if (!var7.hasNext()) {
-                        continue label34;
-                    }
-
-                    entry = (Map.Entry)var7.next();
-                    activity = (Activity)entry.getKey();
-                } while(!this.getActiveActivities().contains(activity));
-
-                Set<BehaviorControl<? super ClientEntity>> set = (Set)entry.getValue();
-                Iterator var11 = set.iterator();
-
-                while(var11.hasNext()) {
-                    BehaviorControl<? super ClientEntity> behaviorControl = (BehaviorControl)var11.next();
-                    if (behaviorControl.getStatus() == Behavior.Status.STOPPED) {
-                        ((ClientBehaviorControl<? super ClientEntity>)behaviorControl).tryStart(clientLevel, livingEntity, l);
+        for (Map<Activity, Set<BehaviorControl<? super ClientEntity>>> map : this.availableBehaviorsByPriority.values()) {
+            for (Map.Entry<Activity, Set<BehaviorControl<? super ClientEntity>>> behavioursForActivity : map.entrySet()) {
+                Activity activity = behavioursForActivity.getKey();
+                if (this.getActiveActivities().contains(activity)) {
+                    for (BehaviorControl<? super ClientEntity> behavior : behavioursForActivity.getValue()) {
+                        if (behavior.getStatus() == Behavior.Status.STOPPED) {
+                            ((ClientBehaviorControl<? super ClientEntity>)behavior).tryStart(clientLevel, livingEntity, time);
+                        }
                     }
                 }
             }
         }
+    }
 
+    private void tickEachRunningBehavior(ClientLevel clientLevel, ClientEntity livingEntity) {
+        long time = clientLevel.getGameTime();
+
+        for(BehaviorControl<? super ClientEntity> behavior : this.getRunningBehaviors()) {
+            ((ClientBehaviorControl<? super ClientEntity>)behavior).tickOrStop(clientLevel, livingEntity, time);
+        }
     }
 
     public static final class Provider {

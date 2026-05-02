@@ -1,5 +1,6 @@
 package justs_js.cel.client.api.behaviour;
 
+import justs_js.cel.CELModLib;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -51,10 +52,12 @@ public class ClientSetEntityLookTarget {
                 Brain<?> brain = livingEntity.getBrain();
 
                 if (brain.hasMemoryValue(MemoryModuleType.LOOK_TARGET)) {
+                    //CELModLib.LOGGER.info("ClientSetEntityLookTarget hasMemoryValue LOOK_TARGET True");
                     return false;
                 }
 
                 if (!brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)) {
+                    //CELModLib.LOGGER.info("ClientSetEntityLookTarget hasMemoryValue NEAREST_VISIBLE_LIVING_ENTITIES False");
                     return false;
                 }
                 NearestVisibleLivingEntities nearestEntities =
@@ -67,9 +70,11 @@ public class ClientSetEntityLookTarget {
                 );
 
                 if (target.isEmpty()) {
+                    //CELModLib.LOGGER.info("ClientSetEntityLookTarget target isEmpty True");
                     return false;
                 }
 
+                //CELModLib.LOGGER.info("ClientSetEntityLookTarget setMemory LOOK_TARGET {}", target.get());
                 brain.setMemory(MemoryModuleType.LOOK_TARGET,
                         new EntityTracker(target.get(), true));
                 return true;
