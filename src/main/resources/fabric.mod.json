@@ -30,6 +30,10 @@
 	"custom": {
 		"modmenu": {
 			"badges": [ "library" ]
+		},
+		"lithium:options": {
+			"mixin.ai.task.memory_changes": false,
+			"mixin.ai.task.launch": false
 		}
 	}
 }
