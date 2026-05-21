@@ -6,27 +6,28 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
-public class ClientFollowTargetSink extends ClientBehavior<ClientEntity> {
+public class ClientAvoidTarget extends ClientBehavior<ClientEntity> {
     private final float speedModifier;
     private final double maxDist;
 
-    public ClientFollowTargetSink(float speedModifier, double maxDist) {
-        super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.INTERACTION_TARGET, MemoryStatus.REGISTERED), Integer.MAX_VALUE);
+    public ClientAvoidTarget(float speedModifier, double maxDist) {
+        super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.AVOID_TARGET, MemoryStatus.REGISTERED), Integer.MAX_VALUE);
         this.speedModifier = speedModifier;
         this.maxDist = maxDist;
     }
 
     @Override
     protected boolean checkExtraStartConditions(ClientLevel clientLevel, ClientEntity livingEntity) {
-        Optional<LivingEntity> entity = livingEntity.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET);
-        return livingEntity.isAlive() && entity.isPresent() && livingEntity.distanceToSqr(entity.get()) <= this.maxDist*this.maxDist;
+        Optional<LivingEntity> entity = livingEntity.getBrain().getMemory(MemoryModuleType.AVOID_TARGET);
+        return livingEntity.isAlive() && entity.isPresent() && livingEntity.distanceToSqr(entity.get()) <= this.maxDist*this.maxDist && !livingEntity.getNavigation().isInProgress();
     }
 
     @Override
@@ -36,19 +37,18 @@ public class ClientFollowTargetSink extends ClientBehavior<ClientEntity> {
 
     @Override
     protected void start(ClientLevel clientLevel, ClientEntity livingEntity, long l) {
-        this.followTarget(livingEntity);
+        this.avoidTarget(livingEntity);
     }
 
     @Override
     protected void stop(ClientLevel clientLevel, ClientEntity livingEntity, long l) {
         Brain<?> brain = livingEntity.getBrain();
         brain.eraseMemory(MemoryModuleType.WALK_TARGET);
-        brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
     }
 
     @Override
     protected void tick(ClientLevel clientLevel, ClientEntity livingEntity, long l) {
-        this.followTarget(livingEntity);
+        this.avoidTarget(livingEntity);
     }
 
     @Override
@@ -56,17 +56,27 @@ public class ClientFollowTargetSink extends ClientBehavior<ClientEntity> {
         return false;
     }
 
-    private void followTarget(ClientEntity livingEntity) {
+    private void avoidTarget(ClientEntity livingEntity) {
         Brain<?> brain = livingEntity.getBrain();
-        if (brain.getMemory(MemoryModuleType.INTERACTION_TARGET).isEmpty()) {
+        if (brain.getMemory(MemoryModuleType.AVOID_TARGET).isEmpty()) {
             brain.eraseMemory(MemoryModuleType.WALK_TARGET);
-            brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
             return;
         }
 
-        LivingEntity toFollow = brain.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-        brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(toFollow, false), this.speedModifier, 2));
-        brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(toFollow, true));
+        float speedModifier = this.speedModifier;
+        LivingEntity toAvoid = brain.getMemory(MemoryModuleType.AVOID_TARGET).get();
+        if (livingEntity.distanceToSqr(toAvoid) < this.maxDist) {
+            speedModifier *= 2;
+        }
+
+        Vec3 pos;
+        for (int i = 0; i < 16; i++) {
+            pos = DefaultRandomPos.getPosAway(livingEntity, (int)maxDist, (int)maxDist, toAvoid.position());
+            if (pos != null) {
+                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, speedModifier, 2));
+                break;
+            }
+        }
     }
 
     @Override

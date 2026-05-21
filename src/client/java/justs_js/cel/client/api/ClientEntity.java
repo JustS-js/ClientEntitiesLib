@@ -2,7 +2,6 @@ package justs_js.cel.client.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import justs_js.cel.client.api.behaviour.*;
 import justs_js.cel.client.api.sensor.ClientSensor;
@@ -22,7 +21,6 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -34,8 +32,6 @@ public abstract class ClientEntity extends PathfinderMob {
                     ClientSensorType.NEAREST_LIVING_ENTITIES
             );
 
-    @Nullable
-    private Entity followTargetEntity;
     protected ClientBrain brain;
 
     public ClientEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -185,22 +181,14 @@ public abstract class ClientEntity extends PathfinderMob {
                                         ImmutableList.of(
                                                 Pair.of(new ClientDoNothing(60, 120), 1),
                                                 Pair.of(ClientRandomStroll.stroll(0.75f), 1),
-                                                Pair.of(new ClientJumpOnSpot(), 1),
-                                                Pair.of(new ClientMoveToTargetSink(), 1)
+                                                Pair.of(new ClientJumpOnSpot(), 1)
                                         )
                                 ),
-                                new ClientFollowTargetSink(0.9F)
+                                new ClientMoveToTargetSink(),
+                                new ClientAvoidTarget(2F, 8)
                         )
                 )
         );
-    }
-
-    public void setFollowTargetEntity(@Nullable Entity followTargetEntity) {
-        this.followTargetEntity = followTargetEntity;
-    }
-
-    public @Nullable Entity getFollowTargetEntity() {
-        return followTargetEntity;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

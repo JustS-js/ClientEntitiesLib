@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class CELModLib implements ClientModInitializer {
 							literal(MOD_ID).then(
 									literal("target").executes(
 											commandContext -> {
-												controller.forEach((e) -> ((ClientEntity)e).setFollowTargetEntity(commandContext.getSource().getPlayer()));
+												controller.forEach((e) -> ((ClientEntity)e).getBrain().setMemory(MemoryModuleType.AVOID_TARGET, commandContext.getSource().getPlayer()));
 												return 1;
 											}
 									)
@@ -71,7 +72,7 @@ public class CELModLib implements ClientModInitializer {
 							literal(MOD_ID).then(
 									literal("untarget").executes(
 											commandContext -> {
-												controller.forEach((e) -> ((ClientEntity)e).setFollowTargetEntity(null));
+												controller.forEach((e) -> ((ClientEntity)e).getBrain().eraseMemory(MemoryModuleType.AVOID_TARGET));
 												return 1;
 											}
 									)
