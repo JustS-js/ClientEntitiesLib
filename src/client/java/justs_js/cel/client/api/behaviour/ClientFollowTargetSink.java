@@ -26,7 +26,7 @@ public class ClientFollowTargetSink extends ClientBehavior<ClientEntity> {
     @Override
     protected boolean checkExtraStartConditions(ClientLevel clientLevel, ClientEntity livingEntity) {
         Optional<LivingEntity> entity = livingEntity.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET);
-        return livingEntity.isAlive() && entity.isPresent() && livingEntity.distanceToSqr(entity.get()) <= this.maxDist*this.maxDist;
+        return livingEntity.isAlive() && entity.isPresent() && livingEntity.distanceToSqr(entity.get()) > this.maxDist*this.maxDist;
     }
 
     @Override
