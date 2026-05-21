@@ -59,11 +59,11 @@ public class ClientJumpOnSpot extends ClientBehavior<Mob> {
         return !tiredOfJumping();
     }
 
-    private boolean isOnGround(ClientLevel clientLevel, Mob livingEntity) {
+    protected boolean isOnGround(ClientLevel clientLevel, Mob livingEntity) {
         return clientLevel.collidesWithSuffocatingBlock(livingEntity, livingEntity.getBoundingBox().expandTowards(0,  - 1.0E-6, 0));
     }
 
-    private boolean tiredOfJumping() {
+    protected boolean tiredOfJumping() {
         return this.remainingJumps <= 0;
     }
 }

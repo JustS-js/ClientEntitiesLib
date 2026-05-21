@@ -56,7 +56,7 @@ public class ClientAvoidTarget extends ClientBehavior<ClientEntity> {
         return false;
     }
 
-    private void avoidTarget(ClientEntity livingEntity) {
+    protected void avoidTarget(ClientEntity livingEntity) {
         Brain<?> brain = livingEntity.getBrain();
         if (brain.getMemory(MemoryModuleType.AVOID_TARGET).isEmpty()) {
             brain.eraseMemory(MemoryModuleType.WALK_TARGET);

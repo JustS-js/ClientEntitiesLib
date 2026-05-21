@@ -109,7 +109,7 @@ public class ClientMoveToTargetSink extends ClientBehavior<Mob> {
         }
     }
 
-    private boolean tryComputePath(Mob mob, WalkTarget walkTarget, long l) {
+    protected boolean tryComputePath(Mob mob, WalkTarget walkTarget, long l) {
         BlockPos blockPos = walkTarget.getTarget().currentBlockPosition();
         this.path = mob.getNavigation().createPath(blockPos, 0);
         this.speedModifier = walkTarget.getSpeedModifier();
@@ -138,11 +138,11 @@ public class ClientMoveToTargetSink extends ClientBehavior<Mob> {
         return false;
     }
 
-    private boolean reachedTarget(Mob mob, WalkTarget walkTarget) {
+    protected boolean reachedTarget(Mob mob, WalkTarget walkTarget) {
         return walkTarget.getTarget().currentBlockPosition().distManhattan(mob.blockPosition()) <= walkTarget.getCloseEnoughDist();
     }
 
-    private static boolean isWalkTargetSpectator(WalkTarget walkTarget) {
+    protected static boolean isWalkTargetSpectator(WalkTarget walkTarget) {
         PositionTracker positionTracker = walkTarget.getTarget();
         if (positionTracker instanceof EntityTracker entityTracker) {
             return entityTracker.getEntity().isSpectator();
