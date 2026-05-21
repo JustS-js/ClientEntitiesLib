@@ -156,14 +156,17 @@ public abstract class ClientEntity extends PathfinderMob {
                         Activity.CORE,
                         0,
                         ImmutableList.of(
-                                new ClientSwim<>(0.8F)
+                                new ClientSwim<>(0.8F),
+                                new ClientLookAtTargetSink(30, 60),
+                                new ClientMoveToTargetSink()
                         )
                 ),
                 ActivityData.create(
                         Activity.IDLE,
-                        0,
                         ImmutableList.of(
-                                new ClientRunOne<>(
+                                Pair.of(0, ClientSetEntityLookTarget.create(4.0F)),
+                                Pair.of(0, new ClientAvoidTarget(0.8F, 1.33F, 8)),
+                                Pair.of(1, new ClientRunOne<>(
                                         ImmutableMap.of(
                                                 MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED,
                                                 MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.REGISTERED,
@@ -171,21 +174,11 @@ public abstract class ClientEntity extends PathfinderMob {
                                         ),
                                         ImmutableList.of(
                                                 Pair.of(new ClientDoNothing(30, 60), 1),
-                                                Pair.of(ClientSetEntityLookTarget.create(4.0F), 1),
                                                 Pair.of(new ClientRandomLookAround(BiasedToBottomInt.of(100, 200), 60, 30, 90), 1),
-                                                Pair.of(new ClientLookAtTargetSink(30, 60), 1)
-                                        )
-                                ),
-                                new ClientRunOne<>(
-                                        ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED),
-                                        ImmutableList.of(
-                                                Pair.of(new ClientDoNothing(60, 120), 1),
-                                                Pair.of(ClientRandomStroll.stroll(0.75f), 1),
+                                                Pair.of(ClientRandomStroll.stroll(0.8f), 1),
                                                 Pair.of(new ClientJumpOnSpot(), 1)
                                         )
-                                ),
-                                new ClientMoveToTargetSink(),
-                                new ClientAvoidTarget(2F, 8)
+                                ))
                         )
                 )
         );
