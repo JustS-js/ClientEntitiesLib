@@ -15,8 +15,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 
 public class ClientAvoidTarget extends ClientBehavior<ClientEntity> {
-    private final float speedModifier;
-    private final double maxDist;
+    protected final float speedModifier;
+    protected final double maxDist;
 
     public ClientAvoidTarget(float speedModifier, double maxDist) {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.AVOID_TARGET, MemoryStatus.REGISTERED), Integer.MAX_VALUE);

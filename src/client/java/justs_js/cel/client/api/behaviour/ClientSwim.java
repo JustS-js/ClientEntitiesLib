@@ -6,7 +6,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Mob;
 
 public class ClientSwim<T extends Mob> extends ClientBehavior<T> {
-    private final float chance;
+    protected final float chance;
 
     public ClientSwim(float f) {
         super(ImmutableMap.of());

@@ -12,10 +12,10 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientRandomLookAround extends ClientBehavior<Mob> {
-    private final IntProvider interval;
-    private final float maxYaw;
-    private final float minPitch;
-    private final float pitchRange;
+    protected final IntProvider interval;
+    protected final float maxYaw;
+    protected final float minPitch;
+    protected final float pitchRange;
 
     public ClientRandomLookAround(IntProvider intProvider, float f, float g, float h) {
         super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.GAZE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT));

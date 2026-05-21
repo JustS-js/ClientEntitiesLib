@@ -1,6 +1,5 @@
 package justs_js.cel.client.api.behaviour;
 
-import justs_js.cel.CELModLib;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -10,7 +9,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,9 +18,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ClientRandomStroll {
-    private static final int MAX_XZ_DIST = 10;
-    private static final int MAX_Y_DIST = 7;
-    private static final int[][] SWIM_XY_DISTANCE_TIERS = new int[][]{{1, 1}, {3, 3}, {5, 5}, {6, 5}, {7, 7}, {10, 7}};
+    protected static final int MAX_XZ_DIST = 10;
+    protected static final int MAX_Y_DIST = 7;
+    protected static final int[][] SWIM_XY_DISTANCE_TIERS = new int[][]{{1, 1}, {3, 3}, {5, 5}, {6, 5}, {7, 7}, {10, 7}};
 
     public ClientRandomStroll() {
     }

@@ -10,10 +10,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 public class ClientDoNothing implements ClientBehaviorControl<LivingEntity> {
-    private final int minDuration;
-    private final int maxDuration;
+    protected final int minDuration;
+    protected final int maxDuration;
     private Behavior.Status status;
-    private long endTimestamp;
+    protected long endTimestamp;
 
     public ClientDoNothing(int i, int j) {
         this.status = Behavior.Status.STOPPED;

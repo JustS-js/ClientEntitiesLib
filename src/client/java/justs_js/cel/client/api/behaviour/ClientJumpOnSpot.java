@@ -7,11 +7,11 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
 public class ClientJumpOnSpot extends ClientBehavior<Mob> {
-    private static final int MIN_JUMPS = 1;
-    private static final int MAX_JUMPS = 8;
-    private static final int COOLDOWN_BETWEEN_JUMPS = 5;
-    private int remainingJumps;
-    private int remainingCooldownUntilNextJump;
+    protected static final int MIN_JUMPS = 1;
+    protected static final int MAX_JUMPS = 8;
+    protected static final int COOLDOWN_BETWEEN_JUMPS = 5;
+    protected int remainingJumps;
+    protected int remainingCooldownUntilNextJump;
 
     public ClientJumpOnSpot() {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));

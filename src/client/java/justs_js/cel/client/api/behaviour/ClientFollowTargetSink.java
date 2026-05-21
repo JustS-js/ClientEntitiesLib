@@ -14,8 +14,8 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import java.util.Optional;
 
 public class ClientFollowTargetSink extends ClientBehavior<ClientEntity> {
-    private final float speedModifier;
-    private final double maxDist;
+    protected final float speedModifier;
+    protected final double maxDist;
 
     public ClientFollowTargetSink(float speedModifier, double maxDist) {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.INTERACTION_TARGET, MemoryStatus.REGISTERED), Integer.MAX_VALUE);

@@ -21,13 +21,13 @@ import java.util.Optional;
 
 public class ClientMoveToTargetSink extends ClientBehavior<Mob> {
 
-    private static final int MAX_COOLDOWN_BEFORE_RETRYING = 40;
-    private int remainingCooldown;
+    protected static final int MAX_COOLDOWN_BEFORE_RETRYING = 40;
+    protected int remainingCooldown;
     @Nullable
-    private Path path;
+    protected Path path;
     @Nullable
-    private BlockPos lastTargetPos;
-    private float speedModifier;
+    protected BlockPos lastTargetPos;
+    protected float speedModifier;
 
     public ClientMoveToTargetSink() {
         this(150, 250);
