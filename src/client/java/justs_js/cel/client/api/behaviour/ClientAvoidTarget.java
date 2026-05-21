@@ -5,39 +5,62 @@ import justs_js.cel.client.api.ClientEntity;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 public class ClientAvoidTarget extends ClientBehavior<ClientEntity> {
-    protected final float speedModifier;
+    protected final float walkSpeedModifier;
+    protected final float sprintSpeedModifier;
     protected final double maxDist;
+    protected Vec3 pos;
 
-    public ClientAvoidTarget(float speedModifier, double maxDist) {
+    public ClientAvoidTarget(float walkSpeedModifier, float sprintSpeedModifier, double maxDist) {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.AVOID_TARGET, MemoryStatus.REGISTERED), Integer.MAX_VALUE);
-        this.speedModifier = speedModifier;
+        this.walkSpeedModifier = walkSpeedModifier;
+        this.sprintSpeedModifier = sprintSpeedModifier;
         this.maxDist = maxDist;
     }
 
     @Override
     protected boolean checkExtraStartConditions(ClientLevel clientLevel, ClientEntity livingEntity) {
-        Optional<LivingEntity> entity = livingEntity.getBrain().getMemory(MemoryModuleType.AVOID_TARGET);
-        return livingEntity.isAlive() && entity.isPresent() && livingEntity.distanceToSqr(entity.get()) <= this.maxDist*this.maxDist && !livingEntity.getNavigation().isInProgress();
+        Brain<?> brain = livingEntity.getBrain();
+        Optional<LivingEntity> entity = brain.getMemory(MemoryModuleType.AVOID_TARGET);
+        if (!livingEntity.isAlive() || entity.isEmpty()) {
+            return false;
+        }
+
+        LivingEntity toAvoid = entity.get();
+        if (toAvoid.distanceToSqr(livingEntity) > maxDist*maxDist) {
+            return false;
+        }
+        pos = getPosAway(livingEntity, (int)maxDist, (int)maxDist, toAvoid.position());
+        if (pos == null) {
+            return false;
+        } else if (toAvoid.distanceToSqr(pos.x, pos.y, pos.z) < toAvoid.distanceToSqr(livingEntity)) {
+            return false;
+        } else {
+            return livingEntity.getNavigation().createPath(pos.x, pos.y, pos.z, 0) != null;
+        }
     }
 
     @Override
     protected boolean canStillUse(ClientLevel clientLevel, ClientEntity livingEntity, long l) {
-        return this.checkExtraStartConditions(clientLevel, livingEntity);
+        return !livingEntity.getNavigation().isDone();
     }
 
     @Override
     protected void start(ClientLevel clientLevel, ClientEntity livingEntity, long l) {
-        this.avoidTarget(livingEntity);
+        Brain<?> brain = livingEntity.getBrain();
+        brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, walkSpeedModifier, 2));
     }
 
     @Override
@@ -48,7 +71,18 @@ public class ClientAvoidTarget extends ClientBehavior<ClientEntity> {
 
     @Override
     protected void tick(ClientLevel clientLevel, ClientEntity livingEntity, long l) {
-        this.avoidTarget(livingEntity);
+        Brain<?> brain = livingEntity.getBrain();
+        if (brain.getMemory(MemoryModuleType.AVOID_TARGET).isEmpty()) {
+            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+            return;
+        }
+
+        LivingEntity toAvoid = brain.getMemory(MemoryModuleType.AVOID_TARGET).get();
+        if (livingEntity.distanceToSqr(toAvoid) < this.maxDist) {
+            livingEntity.getNavigation().setSpeedModifier(this.sprintSpeedModifier);
+        } else {
+            livingEntity.getNavigation().setSpeedModifier(this.walkSpeedModifier);
+        }
     }
 
     @Override
@@ -56,27 +90,12 @@ public class ClientAvoidTarget extends ClientBehavior<ClientEntity> {
         return false;
     }
 
-    protected void avoidTarget(ClientEntity livingEntity) {
-        Brain<?> brain = livingEntity.getBrain();
-        if (brain.getMemory(MemoryModuleType.AVOID_TARGET).isEmpty()) {
-            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
-            return;
+    protected static @Nullable Vec3 getPosAway(PathfinderMob pathfinderMob, int maxHorizontalDistance, int maxVerticalDistance, Vec3 avoidPos) {
+        if (pathfinderMob.getNavigation().canFloat()) {
+            Vec3 dirAway = pathfinderMob.position().subtract(avoidPos);
+            return AirAndWaterRandomPos.getPos(pathfinderMob, maxHorizontalDistance, maxVerticalDistance, -2, dirAway.x, dirAway.z, (double)((float)Math.PI / 2F));
         }
-
-        float speedModifier = this.speedModifier;
-        LivingEntity toAvoid = brain.getMemory(MemoryModuleType.AVOID_TARGET).get();
-        if (livingEntity.distanceToSqr(toAvoid) < this.maxDist) {
-            speedModifier *= 2;
-        }
-
-        Vec3 pos;
-        for (int i = 0; i < 16; i++) {
-            pos = DefaultRandomPos.getPosAway(livingEntity, (int)maxDist, (int)maxDist, toAvoid.position());
-            if (pos != null) {
-                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, speedModifier, 2));
-                break;
-            }
-        }
+        return DefaultRandomPos.getPosAway(pathfinderMob, maxHorizontalDistance, maxVerticalDistance, avoidPos);
     }
 
     @Override
